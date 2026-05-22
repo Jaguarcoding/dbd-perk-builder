@@ -100,14 +100,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px;
-    gap: 10px;
-    min-height: 100px;
+    padding: clamp(6px, 1vw, 12px) clamp(8px, 1.2vw, 14px);
+    gap: clamp(6px, 1vw, 12px);
   }
   .slot-top .sname-text {
     flex: 1;
     color: var(--gold);
-    font-size: clamp(0.95rem, 1.6vw, 1.5rem);
+    font-size: clamp(0.85rem, 2vw, 1.5rem);
     font-weight: 700;
     letter-spacing: 0.03em;
     line-height: 1.25;
@@ -116,17 +115,20 @@
   .slot-top .simages {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: clamp(4px, 0.6vw, 8px);
     flex-shrink: 0;
   }
+  /* Icon native ratio: 204w × 213h ≈ 0.958 — nearly square
+     Character native ratio: 252w × 323h ≈ 0.780
+     Both images share the same vw-based height so they scale together with the slot */
   .slot-top .sicon {
-    height: 80px;
-    width: 77px;
+    height: clamp(56px, 8vw, 110px);
+    width:  clamp(54px, 7.7vw, 106px);
     object-fit: contain;
   }
   .slot-top .schar {
-    height: 80px;
-    width: 62px;
+    height: clamp(56px, 8vw, 110px);
+    width:  clamp(44px, 6vw,  86px);
     object-fit: contain;
   }
   .slot-bottom { background: var(--desc-bg); padding: 4px 6px; }
@@ -241,11 +243,14 @@
   .tooltip {
     position: fixed; z-index: 9999; pointer-events: none;
     background: var(--desc-bg); border: 1px solid var(--gold-dim);
-    border-radius: 5px; padding: 5px; max-width: 280px;
+    border-radius: 5px; padding: 5px;
+    /* Match roughly one slot card width — half the viewport minus gap and padding,
+       clamped so it's always readable and never overflows on very large screens */
+    width: clamp(320px, 44vw, 560px);
     box-shadow: 0 4px 18px rgba(0,0,0,0.7); display: none;
   }
   .tooltip.visible { display: block; }
-  .tooltip img { max-width: 100%; display: block; }
+  .tooltip img { width: 100%; display: block; }
 
   /* ── Loading ── */
   .loading {
@@ -529,7 +534,11 @@
       filteredPerks = [...perkNames];
       document.getElementById('search-count').textContent = `All perks — ${TOTAL}`;
     } else {
-      filteredPerks = perkNames.filter(n => n.toLowerCase().includes(q));
+      filteredPerks = perkNames.filter(n => {
+        if (n.toLowerCase().includes(q)) return true;
+        const t = perks[n] && perks[n].text ? perks[n].text.toLowerCase() : '';
+        return t.includes(q);
+      });
       document.getElementById('search-count').textContent =
         `${filteredPerks.length} result${filteredPerks.length !== 1 ? 's' : ''}`;
     }
@@ -600,15 +609,15 @@
       if (perkName && perks[perkName]) {
         const p = perks[perkName];
         slot.innerHTML = `
-          <div style="background:#20201e;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;gap:10px;min-height:80px;">
+          <div style="background:#20201e;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;gap:10px;min-height:100px;">
             <div style="flex:1;color:#c8a84b;font-size:1.1rem;font-weight:700;letter-spacing:0.03em;line-height:1.25;word-break:break-word;">${perkName}</div>
             <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-              <img src="${p.icon}" style="height:64px;width:64px;object-fit:contain;">
-              <img src="${p.character}" style="height:64px;width:64px;object-fit:contain;">
+              <img src="${p.icon}" style="height:80px;width:77px;display:block;">
+              <img src="${p.character}" style="height:80px;width:62px;display:block;">
             </div>
           </div>
           <div style="background:#13130f;padding:4px 6px;">
-            <img src="${p.description}" style="width:100%;display:block;object-fit:contain;">
+            <img src="${p.description}" style="width:100%;display:block;">
           </div>`;
       } else {
         slot.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:90px;color:#3a3a3e;font-size:1.6rem;">+</div>`;
